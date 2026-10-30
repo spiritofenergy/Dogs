@@ -24,7 +24,6 @@ import com.kodex.dogs.data.mapper.toParallaxNavObject
 import com.kodex.dogs.presentation.admin_panel.AdminPanelScreen
 import com.kodex.dogs.presentation.admin_panel.ModerationScreen
 import com.kodex.dogs.presentation.comments.CommentsScreen
-import com.kodex.dogs.presentation.details.parallaxScreen.ParallaxScreen
 import com.kodex.dogs.presentation.home.HomeScreen
 import com.kodex.dogs.presentation.home.HomeViewModel
 import com.kodex.dogs.presentation.login.LoginScreen
@@ -32,8 +31,9 @@ import com.kodex.dogs.presentation.login.sign_up.SignUpScreen
 import com.kodex.dogs.presentation.myPosts.MyPostEditorScreen
 import com.kodex.dogs.presentation.myPosts.MyPostsScreen
 import com.kodex.dogs.presentation.settingsScreen.SettingsScreen
+import com.kodex.guide.presentation.detailScreen.DetailScreen
 
- @RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.O)
  @Composable
 fun NavigationNavGraph(
     navController: NavHostController,
@@ -193,7 +193,25 @@ fun NavigationNavGraph(
                 }
             )
         }
-        composable<NavRoutes.ParallaxNavObject> { navEntry ->
+        composable<NavRoutes.DetailNavObject> { navEntry ->
+            val navData = navEntry.toRoute<NavRoutes.DetailNavObject>()
+
+            DetailScreen(
+                key = navData.bookId, // <-- ПЕРЕДАЕМ ТОЛЬКО КЛЮЧ
+                onBackPressed = { navController.popBackStack() },
+                onNavigateToReviews = { /* TODO */ },
+                onCommentClick = {
+                    navController.navigate(NavRoutes.CommentsNavData(bookId = navData.bookId))
+                },
+                viewModel = hiltViewModel(),
+                onRelatedBookClick = { relatedBook ->
+                    // Здесь либо тоже передавайте relatedBook.key,
+                    // либо оставьте toParallaxNavObject(), если он передает ключ
+                    navController.navigate(relatedBook.toParallaxNavObject())
+                }
+            )
+        }
+      /*  composable<NavRoutes.ParallaxNavObject> { navEntry ->
             val navData = navEntry.toRoute<NavRoutes.ParallaxNavObject>()
             val navObject = remember(navData.bookId) {
                 navData.copy(
@@ -221,7 +239,7 @@ fun NavigationNavGraph(
                     navController.navigate(relatedBook.toParallaxNavObject())
                 },
             )
-        }
+        }*/
 
         composable<NavRoutes.CommentsNavData> { navEntry ->
             val navData = navEntry.toRoute<NavRoutes.CommentsNavData>()

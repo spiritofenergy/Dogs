@@ -40,7 +40,7 @@ class NavRoutes {
     object SettingsNavObject
 
     @Serializable
-    data class ParallaxNavObject(
+    data class DetailNavObject(
         val bookId: String = "",
         val title: String = "",
         val description: String = "",
@@ -69,7 +69,7 @@ class NavRoutes {
         val hasDelivery: Boolean = true,
         val acceptsCard: Boolean = true,
         val publishPeriod: Int = 1 )
-                @Serializable
+        /*        @Serializable
                 data class ParallaxNavObject1(
                     val bookId: String = "",
                     val title: String = "",
@@ -90,10 +90,10 @@ class NavRoutes {
                     val ratingsList: List<Int> = emptyList(),
                     val hasDelivery: Boolean = false,  // 🆕 Наличие доставки
                     val acceptsCard: Boolean = false   // 🆕 Оплата картой
-        )
+        )*/
 
 
-    @Serializable
+ /*   @Serializable
     data class DetailNavObject(
         val bookId: String = "",
         val title: String = "",
@@ -106,7 +106,7 @@ class NavRoutes {
         val timestamp: Long = System.currentTimeMillis(),
         val isFaves: Boolean = false,
         val ratingsList: List<Int> = emptyList()
-    )
+    )*/
 
     @Serializable
     data class PlaceNavObject(

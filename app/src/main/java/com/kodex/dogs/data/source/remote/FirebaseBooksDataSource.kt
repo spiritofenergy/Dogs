@@ -24,6 +24,15 @@ class FirebaseBooksDataSource(
     private val auth: FirebaseAuth,
 
     ) {
+
+    suspend fun getBookByKey(key: String): BookDTO? {
+        return try {
+            val doc = fireStore.collection(POSTS).document(key).get().await()
+            doc.toObject(BookDTO::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
     suspend fun nextPage(
         keysFavesList: List<String>,
         pageSize: Long,

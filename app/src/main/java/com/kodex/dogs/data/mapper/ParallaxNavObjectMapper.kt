@@ -18,9 +18,9 @@ object ParallaxImageCache {
     }
 }
 
-fun Book.toParallaxNavObject(): NavRoutes.ParallaxNavObject {
+fun Book.toParallaxNavObject(): NavRoutes.DetailNavObject {
     ParallaxImageCache.put(key, imageUrl)
-    return NavRoutes.ParallaxNavObject(
+    return NavRoutes.DetailNavObject(
         bookId = key,
         title = title,
         description = description,

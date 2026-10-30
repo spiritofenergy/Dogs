@@ -64,6 +64,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.kodex.dogs.R
+import com.kodex.dogs.domain.model.Book
+import com.kodex.dogs.domain.model.RatingData
 import com.kodex.dogs.presentation.components.ActionButton
 import com.kodex.dogs.presentation.components.ArrowCircleButton
 import com.kodex.dogs.presentation.components.DeliveryChip
@@ -72,7 +74,6 @@ import com.kodex.dogs.presentation.components.SectionHeader
 import com.kodex.dogs.presentation.components.ServiceInfoRow
 import com.kodex.dogs.presentation.components.StatusChip
 import com.kodex.dogs.presentation.detailScreen.CommentListItem
-import com.kodex.dogs.presentation.detailScreen.DetailsScreenViewModel
 import com.kodex.dogs.presentation.events.DetailUiEvents
 import com.kodex.dogs.presentation.navigation.NavRoutes
 import com.kodex.dogs.ui.dialods.DialogComments
@@ -82,6 +83,7 @@ import com.kodex.dogs.ui.theme.IconBgLight
 import com.kodex.dogs.ui.theme.Orange
 import com.kodex.dogs.ui.theme.TextDark
 import com.kodex.dogs.ui.theme.TextGray
+import com.kodex.guide.presentation.detailScreen.DetailsScreenViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -89,25 +91,38 @@ import java.util.Locale
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainContent(
+    book: Book, // <-- ИЗМЕНЕНО
+    isOpenNow: Boolean,
+    comments: List<RatingData>,
+    ratingData: RatingData,
+    showRateDialog: Boolean,
+    showCommentDialog: Boolean,
+    ratingDataToShow: RatingData,
     onCommentClick: (NavRoutes.CommentsNavData) -> Unit = {},
-    navObject: NavRoutes.ParallaxNavObject,
     onNavigateToReviews: () -> Unit,
     onShowMapClick: () -> Unit,
     onShowImageClick: () -> Unit,
-    viewModel: DetailsScreenViewModel = viewModel(),
+    viewModel: DetailsScreenViewModel,
     onBackPressed: () -> Unit,
-    isOpenNow: Boolean,
+    /* onCommentClick: (NavRoutes.CommentsNavData) -> Unit = {},
+     navObject: NavRoutes.ParallaxNavObject,
+     onNavigateToReviews: () -> Unit,
+     onShowMapClick: () -> Unit,
+     onShowImageClick: () -> Unit,
+     viewModel: DetailsScreenViewModel = viewModel(),
+     onBackPressed: () -> Unit,
+     isOpenNow: Boolean,*/
 ) {
     var showRateDialog by remember { mutableStateOf(false) }
     var showCommentDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val telephone = navObject.telephone
+    val telephone = book.telephone
     val scope = rememberCoroutineScope()
 
-    val bitmap by remember(navObject.imageUrl) {
+    val bitmap by remember(book.imageUrl) {
         mutableStateOf<Bitmap?>(runCatching {
-            val base64Image = Base64.decode(navObject.imageUrl, Base64.DEFAULT)
+            val base64Image = Base64.decode(book.imageUrl, Base64.DEFAULT)
             BitmapFactory.decodeByteArray(base64Image, 0, base64Image.size)
         }.getOrNull())
     }
@@ -116,7 +131,7 @@ fun MainContent(
         onDismiss = { viewModel.onEvent(DetailUiEvents.DetailUiEvent.HideUserRatingDialog) },
         onSubmit = { ratingData ->
             viewModel.onEvent(
-                DetailUiEvents.DetailUiEvent.InsertRatingDialogEvent(ratingData, navObject.bookId)
+                DetailUiEvents.DetailUiEvent.InsertRatingDialogEvent(ratingData, book.key)
             )
         },
         show = uiState.value.showRateDialog,
@@ -142,7 +157,7 @@ fun MainContent(
             // Фото на весь фон
             AsyncImage(
                 model = bitmap,
-                contentDescription = navObject.title,
+                contentDescription = book.title,
                 modifier = Modifier
                     .fillMaxSize()
                     .then(
@@ -150,7 +165,7 @@ fun MainContent(
                         else Modifier
                     ),
                 contentScale = ContentScale.Crop,
-               // transition = androidx.compose.animation.core.tween(durationMillis = 300)
+                // transition = androidx.compose.animation.core.tween(durationMillis = 300)
             )
 
             // Затемнение снизу для читаемости текста
@@ -199,7 +214,7 @@ fun MainContent(
 
                 // Категория по центру
                 Text(
-                    text = stringArrayResource(id = R.array.category_drawer)[navObject.categoryIndex.id],
+                    text = stringArrayResource(id = R.array.category_drawer)[book.categoryIndex.id],
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.White,
@@ -248,7 +263,7 @@ fun MainContent(
                             scope.launch {
                                 viewModel.sharePlace(
                                     context = context,
-                                    place = navObject,
+                                    book = book,
                                     coroutineScope = scope
                                 )
                             }
@@ -259,7 +274,7 @@ fun MainContent(
                         label = "Оценка",
                         onClick = {
                             viewModel.onEvent(
-                                DetailUiEvents.DetailUiEvent.ShowUserRatingDialogEvent(navObject.bookId)
+                                DetailUiEvents.DetailUiEvent.ShowUserRatingDialogEvent(book.key)
                             )
                             showRateDialog = true
                         }
@@ -296,8 +311,8 @@ fun MainContent(
                             tint = Orange
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        val averageRating = if (navObject.ratingsList.isNotEmpty()) {
-                            navObject.ratingsList.average()
+                        val averageRating = if (book.ratingsList.isNotEmpty()) {
+                            book.ratingsList.average()
                         } else 0.0
                         Text(
                             text = String.format("%.1f", averageRating),
@@ -306,7 +321,7 @@ fun MainContent(
                             color = TextDark
                         )
                         Text(
-                            text = " (${navObject.ratingsList.size})",
+                            text = " (${book.ratingsList.size})",
                             fontWeight = FontWeight.Light,
                             fontSize = 14.sp,
                             color = TextGray
@@ -317,8 +332,8 @@ fun MainContent(
                 StatusChip(isOpen = isOpenNow)
 
 
-                    if (navObject.delivery)
-                        DeliveryChip()
+                if (book.delivery)
+                    DeliveryChip()
                 Spacer(modifier = Modifier.width(4.dp))
 
 
@@ -331,7 +346,7 @@ fun MainContent(
             ) {
                 // Название места (занимает основное пространство)
                 Text(
-                    text = navObject.title,
+                    text = book.title,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
@@ -343,7 +358,7 @@ fun MainContent(
 
                 // Цена справа
                 Text(
-                    text = "${navObject.price} р",
+                    text = "${book.price} р",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
@@ -353,7 +368,7 @@ fun MainContent(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = navObject.description,
+                text = book.description,
 
                 fontSize = 15.sp,
                 color = TextGray,
@@ -366,11 +381,11 @@ fun MainContent(
             SectionHeader(title = "Адрес")
 
 // Местоположение в одну линию с круглой кнопкой-стрелкой
-            val latitude = navObject.latitude.toDoubleOrNull()
-            val longitude = navObject.longitude.toDoubleOrNull()
-            val hasMapCoordinates = navObject.location &&
-                latitude != null && latitude.isFinite() && latitude in -90.0..90.0 &&
-                longitude != null && longitude.isFinite() && longitude in -180.0..180.0
+            val latitude = book.latitude?.toDoubleOrNull()
+            val longitude = book.longitude?.toDoubleOrNull()
+            val hasMapCoordinates = book.location &&
+                    latitude != null && latitude.isFinite() && latitude in -90.0..90.0 &&
+                    longitude != null && longitude.isFinite() && longitude in -180.0..180.0
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -406,7 +421,7 @@ fun MainContent(
                             color = TextGray
                         )
                         Text(
-                            text = navObject.village,
+                            text = book.village,
                             fontSize = 15.sp,
                             color = TextGray,
                             fontWeight = FontWeight.Medium,
@@ -446,7 +461,7 @@ fun MainContent(
             }
 
 // Детальный адрес в одну линию (улица, дом, квартира)
-            if (navObject.street.isNotEmpty() || navObject.house.isNotEmpty() || navObject.flat.isNotEmpty()) {
+            if (book.street.isNotEmpty() || book.house.isNotEmpty() || book.flat.isNotEmpty()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -454,36 +469,36 @@ fun MainContent(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     // Улица
-                    if (navObject.street.isNotEmpty()) {
+                    if (book.street.isNotEmpty()) {
                         InfoRow(
                             icon = Icons.Default.Streetview,
                             iconTint = Color(0xFF3B82F6),
                             label = "Улица",
-                            value = navObject.street,
+                            value = book.street,
                             modifier = Modifier.weight(1f)
                         )
                     }
 
-                    if (navObject.house.isNotEmpty()) {
+                    if (book.house.isNotEmpty()) {
                         Spacer(modifier = Modifier.width(8.dp))
                         // Дом
                         InfoRow(
                             icon = Icons.Default.Home,
                             iconTint = Color(0xFF3B82F6),
                             label = "Дом",
-                            value = navObject.house,
+                            value = book.house,
                             modifier = Modifier.weight(1f)
                         )
                     }
 
-                    if (navObject.flat.isNotEmpty()) {
+                    if (book.flat.isNotEmpty()) {
                         Spacer(modifier = Modifier.width(8.dp))
                         // Квартира
                         InfoRow(
                             icon = Icons.Default.MeetingRoom,
                             iconTint = Color(0xFF3B82F6),
                             label = "Кв.",
-                            value = navObject.flat,
+                            value = book.flat,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -517,7 +532,7 @@ fun MainContent(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = navObject.openingHours,
+                                text = book.openingHours,
                                 fontSize = 15.sp,
                                 color = TextDark,
                                 fontWeight = FontWeight.Medium
@@ -579,10 +594,10 @@ fun MainContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             // ===== Секция: Услуги (Доставка и Оплата) =====
-            if (navObject.hasDelivery || navObject.payment) {
+            if (book.delivery || book.payment) {
                 SectionHeader(title = "Услуги")
 
-                if (navObject.hasDelivery) {
+                if (book.delivery) {
                     ServiceInfoRow(
                         icon = Icons.Default.LocalShipping,
                         title = "Доставка",
@@ -591,7 +606,7 @@ fun MainContent(
                     )
                 }
 
-                if (navObject.payment) {
+                if (book.payment) {
                     ServiceInfoRow(
                         icon = Icons.Default.CreditCard,
                         title = "Оплата картой",
@@ -604,7 +619,7 @@ fun MainContent(
 
                 // Дата публикации
                 val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-                val publicationDate = dateFormat.format(navObject.timestamp)
+                val publicationDate = dateFormat.format(book.timeStamp)
                 Text(
                     text = "Дата публикации: $publicationDate",
                     fontSize = 14.sp,
@@ -615,7 +630,7 @@ fun MainContent(
 
                 // Период публикации
                 val publishPeriodNames = stringArrayResource(id = R.array.publish_period_user)
-                val periodText = publishPeriodNames.getOrNull(navObject.publishPeriod - 1) ?: ""
+                val periodText = publishPeriodNames.getOrNull(book.publishPeriod - 1) ?: ""
                 if (periodText.isNotEmpty()) {
                     Text(
                         text = "Период публикации: $periodText",

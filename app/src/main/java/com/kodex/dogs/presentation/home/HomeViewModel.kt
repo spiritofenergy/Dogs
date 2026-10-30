@@ -166,7 +166,7 @@ class HomeViewModel @Inject constructor(
                 val book = changedBookList.find { it.key == pData.key }
                 if (book != null) {
                     pData.copy(
-                        isFavorite = book.isFavorite
+                      //  isFavorite = book.isFavorite
                     )
                 } else {
                     pData
@@ -519,14 +519,14 @@ class HomeViewModel @Inject constructor(
             if (changedBook == null) {
                 list + ChangedTempBook(
                     key = book.key,
-                    isFavorite = book.isFavorite,
+                  //  isFavorite = book.isFavorite,
                     isDeleted = isDeleted
                 )
             } else {
                 list.map { tempBook ->
                     if (tempBook.key == book.key) {
                         tempBook.copy(
-                            isFavorite = book.isFavorite,
+                           // isFavorite = book.isFavorite,
                             isDeleted = isDeleted
                         )
                     } else {
@@ -621,13 +621,13 @@ class HomeViewModel @Inject constructor(
             return@launch
         }
 
-        // Обновляем состояние isFavorite
+     /*   // Обновляем состояние isFavorite
         val updatedBook = book.copy(isFavorite = true)
         mainDb.trackDao().insertPost(updatedBook)
 
         // Обновляем UI через bookListUpdate
         updateChangedBook(updatedBook, isDeleted = false)
-
+        */
         withContext(Dispatchers.Main) {
             _uiState.emit(MainUiState.Success)
         }

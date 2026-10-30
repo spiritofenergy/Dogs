@@ -33,7 +33,6 @@ fun BookDTO.toBook(): Book {
         telephone = telephone,
         categoryIndex = BookCategories.fromId(categoryId),
         imageUrl = imageUrl,
-        isFavorite = isFavorite,
         isAuthor = isAuthor,
         authorRole = authorRole,  // ✅ authorRole → authorRole
         publishPeriod = publishPeriod,
@@ -66,7 +65,6 @@ fun Book.toBookDTO(): BookDTO {
         categoryIndex = categoryIndex.id,  // ✅ Сохраняем как Int
         categoryName = categoryIndex.name,  // ✅ Имя для обратной совместимости
         imageUrl = imageUrl,
-        isFavorite = isFavorite,
         isAuthor = isAuthor,
         authorRole = authorRole,  // ✅ authorRole → authorRole
         publishPeriod = publishPeriod,
@@ -84,5 +82,39 @@ fun Book.toBookDTO(): BookDTO {
         longitude = longitude,
         authorUid = authorUid,
         isUploaded = isUploaded,
+    )
+}
+fun BookDTO.toDomain(): Book {
+    return Book(
+        key = this.key,
+        title = this.title,
+        description = this.description,
+        price = this.price,
+        telephone = this.telephone,
+        village = this.village,
+        street = this.street,
+        house = this.house,
+        flat = this.flat,
+        latitude = this.latitude?.toString(),
+        longitude = this.longitude?.toString(),
+        categoryIndex = BookCategories.OTHER,
+        location = this.location,
+        delivery = this.delivery,
+        payment = this.payment,
+        imageUrl = this.imageUrl,
+        authorUid = this.authorUid,
+        authorRole = this.authorRole,
+        isUploaded = this.isUploaded,
+        timeStamp = this.timeStamp,
+        publishPeriod = this.publishPeriod,
+        /* openingHours = this.openingHours,
+         isBanner = this.isBanner,
+         bannerTextTopLeft = this.bannerTextTopLeft,
+         bannerTextTopRight = this.bannerTextTopRight,
+         bannerTextBottomLeft = this.bannerTextBottomLeft,
+         bannerTextBottomRight = this.bannerTextBottomRight,
+         bannerPublishDate = this.bannerPublishDate,
+         bannerExpireDate = this.bannerExpireDate*/
+        // Добавьте сюда остальные поля, которые есть в вашей модели Book и BookDTO
     )
 }

@@ -30,14 +30,22 @@ class SavedPostsRepositoryImpl @Inject constructor(
     }
 
     override suspend fun save(book: Book) {
-        localSource.insert(book.copy(isFavorite = true))
+        TODO("Not yet implemented")
     }
+
+    /* override suspend fun save(book: Book) {
+         localSource.insert(book.copy(isFavorite = true))
+     }*/
 
     override suspend fun remove(key: String) {
         localSource.deleteByKey(key)
     }
 
     override suspend fun toggle(book: Book): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    /*override suspend fun toggle(book: Book): Boolean {
         return if (localSource.exists(book.key)) {
             localSource.deleteByKey(book.key)
             false
@@ -45,5 +53,5 @@ class SavedPostsRepositoryImpl @Inject constructor(
             localSource.insert(book.copy(isFavorite = true))
             true
         }
-    }
+    }*/
 }
