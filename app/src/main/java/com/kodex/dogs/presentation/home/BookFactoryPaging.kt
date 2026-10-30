@@ -1,0 +1,42 @@
+package com.kodex.dogs.presentation.home
+
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
+import com.kodex.dogs.data.mapper.toBook
+import com.kodex.dogs.data.source.remote.FirebaseBooksDataSource
+import com.kodex.dogs.domain.model.Book
+import com.kodex.dogs.domain.model.BookFilterState
+import java.io.IOException
+import javax.inject.Inject
+
+class BookFactoryPaging @Inject constructor(
+    private val dataSource: FirebaseBooksDataSource,
+    private val keysFavsList: List<String>,
+    private val bookFilter: BookFilterState,
+    ): PagingSource<String, Book>() {
+
+    override fun getRefreshKey(state: PagingState<String, Book>)
+    : String? {
+        return null
+    }
+
+    override suspend fun load (params: LoadParams<String>)
+    : LoadResult<String, Book> {
+        try {
+            val currentPage = params.key
+            val booksPageDTO = dataSource.nextPage(
+                keysFavesList = keysFavsList,
+                pageSize = params.loadSize.toLong(),
+                currentKey = currentPage,
+                bookFilter = bookFilter,
+            )
+            return LoadResult.Page(
+                data = booksPageDTO.books.map { it.toBook() },
+                prevKey = null,
+                nextKey = booksPageDTO.listItemId
+            )
+        }catch (e: IOException){
+            return LoadResult.Error(e)
+        }
+    }
+}

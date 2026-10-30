@@ -1,0 +1,182 @@
+package com.kodex.dogs
+
+import com.kodex.guide.data.images.BitmapEncoder
+import com.kodex.guide.domain.model.Book
+import com.kodex.guide.domain.model.PostEditorState
+import com.kodex.guide.domain.tarif.AuthStateProvider
+import com.kodex.guide.domain.usecase.DeleteMyPostUseCase
+import com.kodex.guide.domain.usecase.GetMyPostUseCase
+import com.kodex.guide.domain.usecase.GeocodePostAddressUseCase
+import com.kodex.guide.domain.usecase.ObserveLatestDraftUseCase
+import com.kodex.guide.domain.usecase.ObserveMyPostsUseCase
+import com.kodex.guide.domain.usecase.SaveDraftUseCase
+import com.kodex.guide.domain.usecase.UploadMyPostUseCase
+import com.kodex.guide.domain.usecase.ValidatePostUseCase
+import com.kodex.guide.domain.user.AuthUser
+import com.kodex.guide.presentation.myPosts.MyPostsEvent
+import com.kodex.guide.presentation.myPosts.MyPostsViewModel
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class MyPostsViewModelTest {
+
+    private val observe = mockk<ObserveMyPostsUseCase> {
+        every { invoke(uid = any()) } returns flowOf(emptyList())
+    }
+    private val getPost = mockk<GetMyPostUseCase>()
+    private val saveDraft = mockk<SaveDraftUseCase>()
+    private val upload = mockk<UploadMyPostUseCase>()
+    private val delete = mockk<DeleteMyPostUseCase>()
+    private val encoder = mockk<BitmapEncoder>()
+    private val authProvider = mockk<AuthStateProvider> {
+        every { currentUser() } returns null
+    }
+    private val geocodePostAddress = mockk<GeocodePostAddressUseCase>()
+    private val observeLatestDraft = mockk<ObserveLatestDraftUseCase> {
+        every { invoke() } returns flowOf<PostEditorState?>(null)
+    }
+    private val validatePost = ValidatePostUseCase()
+
+    private lateinit var viewModel: MyPostsViewModel
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(StandardTestDispatcher())
+        viewModel = createViewModel()
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `savePost publishes a valid post`() = runTest {
+        val state = validPostState()
+        coEvery { upload(any<Book>()) } returns Result.success(Unit)
+
+        val events = collectEvents()
+        viewModel.savePost(state, publish = true)
+        advanceUntilIdle()
+        events.job.cancel()
+
+        assertEquals(
+            listOf(
+                MyPostsEvent.Toast("Объявление опубликовано!"),
+                MyPostsEvent.NavigateBack
+            ),
+            events.values
+        )
+        coVerify(exactly = 1) {
+            upload(match { it.title == state.title && it.imageUrl == state.existingImageUrl })
+        }
+    }
+
+    @Test
+    fun `savePost reports a repository failure`() = runTest {
+        val state = validPostState()
+        coEvery { saveDraft(any<Book>()) } returns Result.failure(IllegalStateException("диск полон"))
+
+        val events = collectEvents()
+        viewModel.savePost(state, publish = false)
+        advanceUntilIdle()
+        events.job.cancel()
+
+        assertEquals(
+            listOf(MyPostsEvent.Toast("Ошибка сохранения: диск полон")),
+            events.values
+        )
+        coVerify(exactly = 0) { upload(any<Book>()) }
+    }
+
+    @Test
+    fun `delete emits a success message`() = runTest {
+        val book = Book(key = "k3")
+        coEvery { delete(book) } returns Result.success(Unit)
+
+        val events = collectEvents()
+        viewModel.delete(book)
+        advanceUntilIdle()
+        events.job.cancel()
+
+        assertEquals(listOf(MyPostsEvent.Toast("Объявление удалено")), events.values)
+    }
+
+    @Test
+    fun `init loads posts for the authenticated user`() = runTest {
+        val user = mockk<AuthUser> { every { uid } returns "user1" }
+        val authWithUser = mockk<AuthStateProvider> {
+            every { currentUser() } returns user
+        }
+        val book = Book(key = "p1", title = "Мой пост")
+        val observeMock = mockk<ObserveMyPostsUseCase> {
+            every { invoke(uid = "user1") } returns flowOf(listOf(book))
+        }
+
+        val vm = createViewModel(
+            observeMyPosts = observeMock,
+            authStateProvider = authWithUser
+        )
+        advanceUntilIdle()
+
+        assertEquals(listOf(book), vm.myPosts.value)
+        coVerify(exactly = 1) { observeMock(uid = "user1") }
+    }
+
+    private fun createViewModel(
+        observeMyPosts: ObserveMyPostsUseCase = observe,
+        authStateProvider: AuthStateProvider = authProvider
+    ) = MyPostsViewModel(
+        validatePost = validatePost,
+        geocodePostAddress = geocodePostAddress,
+        observeMyPosts = observeMyPosts,
+        getMyPost = getPost,
+        saveDraft = saveDraft,
+        uploadMyPost = upload,
+        deleteMyPost = delete,
+        bitmapEncoder = encoder,
+        authStateProvider = authStateProvider,
+        observeLatestDraft = observeLatestDraft
+    )
+
+    private fun validPostState() = PostEditorState(
+        title = "Объявление",
+        description = "Описание товара с достаточным количеством символов",
+        price = "100",
+        telephone = "4951234567",
+        village = "Тула",
+        existingImageUrl = "photo"
+    )
+
+    private fun collectEvents(): CollectedEvents {
+        val values = mutableListOf<MyPostsEvent>()
+        val job = kotlinx.coroutines.CoroutineScope(Dispatchers.Main).launch(
+            start = CoroutineStart.UNDISPATCHED
+        ) {
+            viewModel.uiEvents.collect { values.add(it) }
+        }
+        return CollectedEvents(values, job)
+    }
+
+    private data class CollectedEvents(
+        val values: List<MyPostsEvent>,
+        val job: kotlinx.coroutines.Job
+    )
+}

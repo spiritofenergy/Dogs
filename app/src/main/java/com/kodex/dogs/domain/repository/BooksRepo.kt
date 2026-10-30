@@ -1,0 +1,19 @@
+package com.kodex.dogs.domain.repository
+
+import android.net.Uri
+import androidx.paging.PagingData
+import com.kodex.dogs.domain.model.Book
+import com.kodex.dogs.domain.model.BookFilterState
+import com.kodex.dogs.domain.model.RatingData
+import kotlinx.coroutines.flow.Flow
+
+interface  BooksRepo {
+    fun getBooks(favsKeysList: List<String>, bookFilter: BookFilterState): Flow<PagingData<Book>>
+    suspend fun deleteBook(book: Book): Result<Unit>
+    suspend fun saveBook(book: Book, uri: Uri?): Result<Unit>
+    suspend fun submitUserRating(ratingData: RatingData, bookId: String): Result<Unit>
+    suspend fun deleteComment(uid: String): Result<Unit>
+    suspend fun getBookComments(bookId: String): Result<List<RatingData>>
+    suspend fun getUserRating(bookId: String): Result<RatingData?>
+
+    }

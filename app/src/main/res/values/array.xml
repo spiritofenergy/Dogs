@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+    <string-array name="category_drawer">
+        <item>Animals</item>
+        <item>Plants</item>
+        <item>Work</item>
+        <item>Services</item>
+        <item>Real estate</item>
+        <item>Auto</item>
+        <item>Electronics</item>
+        <item>Entertainments</item>
+        <item>News</item>
+        <item>Other</item>
+        <item>Construction</item>
+        <item>Food</item>
+        <item>All</item>
+        <item>All</item>
+    </string-array>
+
+    <string-array name="category_top">
+        <item>Animals</item>
+        <item>Plants</item>
+        <item>Work</item>
+        <item>Services</item>
+        <item>Real estate</item>
+        <item>Auto</item>
+        <item>Electronics</item>
+        <item>Entertainments</item>
+        <item>News</item>
+        <item>Other</item>
+        <item>Construction</item>
+        <item>Food</item>
+        <item>All</item>
+        <item>Saved</item>
+    </string-array>
+
+    <string-array name="category_add">
+        <item>Animals</item>
+        <item>Plants</item>
+        <item>Work</item>
+        <item>Services</item>
+        <item>Real estate</item>
+        <item>Auto</item>
+        <item>Electronics</item>
+        <item>Entertainments</item>
+        <item>News</item>
+        <item>Other</item>
+        <item>Construction</item>
+        <item>Food</item>
+    </string-array>
+
+    <string-array name="publish_period_user">
+        <item>1</item>
+        <item>3</item>
+        <item>7</item>
+        <item>14</item>
+        <item>30</item>
+    </string-array>
+<string-array name="publish_period_business">
+        <item>1</item>
+        <item>3</item>
+        <item>7</item>
+        <item>14</item>
+        <item>30</item>
+        </string-array>
+<string-array name="publish_period_premium">
+        <item>1</item>
+        <item>3</item>
+        <item>7</item>
+        <item>14</item>
+        <item>30</item>
+        <item>90</item>
+        <item>180</item>
+        <item>365</item>
+    </string-array>
+    <string-array name="category_admin">
+        <item>Admin panel</item>
+        <item>Add</item>
+        <item>Enter</item>
+        <item>Output</item>
+        <item>Saved</item>//9
+        <item>My ads</item>
+        <item>Side menu</item>
+        <item>Settings</item>
+    </string-array>
+
+
+    <string-array name="order_by">
+        <item>Title</item> <!-- 0 -->
+        <item>Prise</item> <!-- 1 -->
+     </string-array>
+
+    <string-array name="personal_data_array">
+        <item>Name or Nick name</item>
+        <item>phone number</item>
+
+    </string-array>
+    <string-array name="address_array">
+        <item>City</item>
+        <item>Street</item>
+        <item>Flat</item>
+        <item>Postal code</item>
+    </string-array>
+
+    <string-array name="password_array">
+    <item>Email</item>
+    </string-array>
+
+    <string-array name="delete_account_array">
+    <item>Email</item>
+    <item>Password</item>
+    </string-array>
+
+    <string-array name="image_format_array">
+    <item>WEBP_LOSSY</item>
+    <item>WEBP_LOSSLESS</item>
+    <item>JPEG</item>
+    <item>PNG</item>
+    </string-array>
+
+    <string-array name="image_quality_array">
+    <item>LOW</item>
+    <item>NORMAL</item>
+    <item>HIGH</item>
+    </string-array>
+
+    <string-array name="image_size_array">
+    <item>100</item>
+    <item>200</item>
+    <item>300</item>
+    <item>600</item>
+    </string-array>
+</resources>
