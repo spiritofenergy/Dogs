@@ -20,7 +20,7 @@ fun BookDTO.toBook(): Book {
             BookCategories.OTHER.id
         }
     }
-    
+
     Log.d("BookMapper", "title=${title}, categoryIndex=$categoryIndex (${categoryIndex::class.java.simpleName}) → categoryId=$categoryId → ${BookCategories.fromId(categoryId).name}")
 
     return Book(
